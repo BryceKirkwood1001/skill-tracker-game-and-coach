@@ -11,10 +11,10 @@ To use the app, run database_setup.py first to create the database used to store
 - Basic user profiles
 - JSON persistence (for user data)
 - SQLite database
+- Achievements
 
 ## Planned Features
 
-- Achievements
 - Collectibles
 - Web UI
 - AI-powered goal setting
