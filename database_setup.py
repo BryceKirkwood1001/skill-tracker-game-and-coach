@@ -3,6 +3,8 @@ import sqlite3
 connection = sqlite3.connect("skills.db")
 cursor = connection.cursor()
 
+# current list of tables: skills, achievements, activity log, user info
+
 cursor.execute("""
     CREATE TABLE IF NOT EXISTS skills
     (
@@ -12,6 +14,7 @@ cursor.execute("""
         xp_value INTEGER
     )
     """)
+
 cursor.execute("""
     CREATE TABLE IF NOT EXISTS achievements
     (
@@ -21,6 +24,34 @@ cursor.execute("""
         unlocked INTEGER
     )
     """)
+
+cursor.execute("""
+    CREATE TABLE IF NOT EXISTS activity_log
+    (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, 
+        date TEXT UNIQUE NOT NULL
+    )
+    """)
+
+cursor.execute("""
+    CREATE TABLE IF NOT EXISTS user_info
+    (  
+        id INTEGER PRIMARY KEY,
+        username TEXT, 
+        xp INTEGER, 
+        level INTEGER, 
+        xp_milestone INTEGER,
+        skills_mastered INTEGER, 
+        hours_logged INTEGER, 
+        streak INTEGER
+    )
+    """)
+
+cursor.execute("""
+        INSERT OR IGNORE INTO user_info
+        (id, username, xp, level, xp_milestone, skills_mastered, hours_logged, streak)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (1, None, 0, 0, 100, 0, 0, 0))
 
 # Numbering: 
 # 1 = intro
