@@ -1,19 +1,16 @@
-import sqlite3
-from datetime import date
-
 from achievements import *
 from skills import *
 from user import *
 from util import *
 
-# Prompts the user to create a simple account when a new user data file is created
+# Prompts the user to create a simple account if no user data is found
 user = getUser()
-if user["username"] == None:
+if user.username == None:
     username = strInput("It appears this is your first time here, please enter a username: ")
-    user["username"] = username
-    updateUser(user)
+    user.username = username
+    user.save()
 
-print(f"Hello {user["username"]}, and welcome to your skill tracker!")
+print(f"Hello {user.username}, and welcome to your skill tracker!")
 
 while True:
     print("\nWhat would you like to do?")
@@ -37,11 +34,15 @@ while True:
                 print("A skill with that name already exists, please try again")
             else:
                 break
-        new_skill_goal = intInput("Goal number of hours: ", False)
         new_skill_hrs = intInput("Number of hours spent so far: ", True)
-
+        while True:
+            new_skill_goal = intInput("Goal number of hours: ", False)
+            if new_skill_goal <= new_skill_hrs:
+                print("Your goal cannot be less than the number of hours you have so far.")
+            else:
+                break
         addSkill(new_skill_name, new_skill_goal)
-        progressSkill(new_skill_name, new_skill_hrs)
+        progressSkill(user, new_skill_name, new_skill_hrs)
 
         completeAchievement(1001)
 
@@ -58,15 +59,15 @@ while True:
                 break
 
         update_hrs = intInput("Hours to add: ", True)
-        progressSkill(update_choice, update_hrs)
+        progressSkill(user, update_choice, update_hrs)
 
-        progressCheck(update_choice)
+        progressCheck(user, update_choice)
 
     elif choice == 3: # View all skills -------------------------------------
         if checkEmptyList() == 0:
             print("You have no skills in progress")
         else:
-            print(f"{user["username"]}'s Active Skills: ")
+            print(f"{user.username}'s Active Skills: ")
             skillPrint()
 
     elif choice == 4: # Delete a skill --------------------------------------
@@ -85,7 +86,7 @@ while True:
         skillPrint()
 
     elif choice == 5: # View profile ----------------------------------------
-        printUser()
+        user.printUser()
 
     elif choice == 6: # Exit
         break

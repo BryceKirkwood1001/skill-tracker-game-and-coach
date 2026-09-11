@@ -6,14 +6,14 @@ def strInput(prompt): # Handles user string input
         else:
             print("Input cannot be empty")
         
-def intInput(prompt, allowZero): # Handles user int input
+def intInput(prompt, allow_zero): # Handles user int input
     while True:
         try:
             intIn = int(input(prompt))
         except ValueError:
             print("Invalid input, please try again")
         else:
-            if allowZero == False and intIn == 0:
+            if allow_zero == False and intIn == 0:
                 print("Invalid input, please try again")
             elif intIn < 0:
                 print("Invalid input, please try again")
