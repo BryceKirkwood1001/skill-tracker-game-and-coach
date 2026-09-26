@@ -9,14 +9,13 @@ To use the app, run database_setup.py first to create the database used to store
 - Track skills and progress
 - XP and leveling system
 - Basic user profiles
-- JSON persistence (for user data)
 - SQLite database
 - Achievements
 
 ## Planned Features
 
-- Collectibles
 - Web UI
 - AI-powered goal setting
+- Collectibles
 
 Please note that the project is currently not ready to be distributed or used by anyone outside of any developers
