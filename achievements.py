@@ -3,13 +3,13 @@ from datetime import date
 
 from user import *
 
-def getAchievements(): # Returns all rows from the achievements table
+def get_achievements(): # Returns all rows from the achievements table
     with sqlite3.connect("skills.db") as conn:
         cursor = conn.cursor()
         cursor.execute("""SELECT * FROM achievements""")
         return cursor.fetchall()
 
-def getAchievement(id): # Returns one row from the achievements table (name, description, unlocked)
+def get_achievement(id): # Returns one row from the achievements table (name, description, unlocked)
     with sqlite3.connect("skills.db") as conn:
         cursor = conn.cursor()
         cursor.execute("""
@@ -19,8 +19,8 @@ def getAchievement(id): # Returns one row from the achievements table (name, des
             """, (id,))
         return cursor.fetchone()
     
-def completeAchievement(id): # Marks an achievement as complete and sends a message
-    row = getAchievement(id)
+def complete_achievement(id): # Marks an achievement as complete and sends a message
+    row = get_achievement(id)
     if row[2] == 1:
         return
     with sqlite3.connect("skills.db") as conn:
@@ -32,7 +32,7 @@ def completeAchievement(id): # Marks an achievement as complete and sends a mess
             """, (id,))
     print(f"Congratulations, you have unlocked the achievement '{row[0]}'!")
 
-def checkStreak(user): # Checks if the user's streak continues
+def check_streak(user): # Checks if the user's streak continues
     with sqlite3.connect("skills.db") as conn:
         cursor = conn.cursor()
         cursor.execute("""SELECT date FROM activity_log ORDER BY id DESC LIMIT 1""")
@@ -49,64 +49,64 @@ def checkStreak(user): # Checks if the user's streak continues
                 user.active_streak = 1
         user.save()
         if user.active_streak >= 3:
-            completeAchievement(1003)
-        checkMotivationGoals(user)
+            complete_achievement(1003)
+        check_motivation_goals(user)
 
-def checkMultitaskGoals(): #2000s, number of active goals
+def check_multitask_goals(): #2000s, number of active goals
     with sqlite3.connect("skills.db") as conn:
         cursor = conn.cursor()
         cursor.execute("""SELECT COUNT(*) FROM skills""")
         num_skills = cursor.fetchone()[0]
         if num_skills >= 20:
-            completeAchievement(2004)
+            complete_achievement(2004)
         if num_skills >= 10:
-            completeAchievement(2003)
+            complete_achievement(2003)
         if num_skills >= 5:
-            completeAchievement(2002)
+            complete_achievement(2002)
         if num_skills >= 3:
-            completeAchievement(2001)
+            complete_achievement(2001)
 
-def checkDedicationGoals(user): #3000s, number of total hours logged
+def check_dedication_goals(user): #3000s, number of total hours logged
     total_hours = user.hours_logged
     if total_hours >= 10000:
-        completeAchievement(3006)
+        complete_achievement(3006)
     if total_hours >= 1000:
-        completeAchievement(3005)
+        complete_achievement(3005)
     if total_hours >= 500:
-        completeAchievement(3004)
+        complete_achievement(3004)
     if total_hours >= 100:
-        completeAchievement(3003)
+        complete_achievement(3003)
     if total_hours >= 50:
-        completeAchievement(3002)
+        complete_achievement(3002)
     if total_hours >= 10:
-        completeAchievement(3001)
+        complete_achievement(3001)
 
-def checkMasteryGoals(user): #4000s, number of mastered skills
+def check_mastery_goals(user): #4000s, number of mastered skills
     skills_mastered = user.skills_mastered
     if skills_mastered >= 25:
-        completeAchievement(4006)
+        complete_achievement(4006)
     if skills_mastered >= 15:
-        completeAchievement(4005)
+        complete_achievement(4005)
     if skills_mastered >= 10:
-        completeAchievement(4004)
+        complete_achievement(4004)
     if skills_mastered >= 5:
-        completeAchievement(4003)
+        complete_achievement(4003)
     if skills_mastered >= 3:
-        completeAchievement(4002)
+        complete_achievement(4002)
     if skills_mastered >= 1:
-        completeAchievement(4001)
+        complete_achievement(4001)
 
-def checkMotivationGoals(user): #5000s, length of streak
+def check_motivation_goals(user): #5000s, length of streak
     current_streak = user.active_streak
     if current_streak >= 1000:
-        completeAchievement(5006)
+        complete_achievement(5006)
     if current_streak >= 360:
-        completeAchievement(5005)
+        complete_achievement(5005)
     if current_streak >= 180:
-        completeAchievement(5004)
+        complete_achievement(5004)
     if current_streak >= 90:
-        completeAchievement(5003)
+        complete_achievement(5003)
     if current_streak >= 30:
-        completeAchievement(5002)
+        complete_achievement(5002)
     if current_streak >= 7:
-        completeAchievement(5001)
+        complete_achievement(5001)

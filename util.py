@@ -1,4 +1,4 @@
-def strInput(prompt): # Handles user string input
+def str_input(prompt): # Handles user string input
     while True:
         strIn = str(input(prompt)).strip()
         if strIn:
@@ -6,7 +6,7 @@ def strInput(prompt): # Handles user string input
         else:
             print("Input cannot be empty")
         
-def intInput(prompt, allow_zero): # Handles user int input
+def int_input(prompt, allow_zero): # Handles user int input
     while True:
         try:
             intIn = int(input(prompt))

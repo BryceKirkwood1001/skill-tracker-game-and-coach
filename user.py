@@ -11,7 +11,7 @@ class User:
         self.hours_logged = hours_logged
         self.active_streak = active_streak
 
-    def addXp(self, amt):
+    def add_xp(self, amt): # Adds xp to the user and levels them up
         self.xp += amt
         if self.xp >= self.xp_milestone:
             while self.xp >= self.xp_milestone:
@@ -20,7 +20,7 @@ class User:
             print(f"Congratulations, you have leveled up to level {self.level}!")
             print(f"You need {self.xp_milestone - self.xp} more XP to get to level {self.level + 1}.")
 
-    def save(self):
+    def save(self): # Sends any changes made to the user to the database
         with sqlite3.connect("skills.db") as conn:
             cursor = conn.cursor()
             cursor.execute("""
@@ -45,11 +45,11 @@ class User:
                 self.id
             ))
 
-    def printUser(self):
+    def print_user(self): # Prints the user's info
         print(f"{self.username}'s Profile: \nXP: {self.xp} \nLevel: {self.level} \nXP Milestone: {self.xp_milestone} \nSkills Mastered: {self.skills_mastered} \nHours Logged: {self.hours_logged} \nStreak: {self.active_streak}")
 
 
-def getUser():
+def get_user(): # Returns a User object with all of the user's info
     with sqlite3.connect("skills.db") as conn:
         cursor = conn.cursor()
         cursor.execute("""
