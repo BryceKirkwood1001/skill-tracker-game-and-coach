@@ -5,14 +5,72 @@ from achievements import *
 from user import *
 from util import *
 
-def getSkills(): # Returns all rows from the skills table
-    with sqlite3.connect("skills.db") as conn:
-        cursor = conn.cursor()
-        cursor.execute("""SELECT * FROM skills""")
-        skills = cursor.fetchall()
-    return skills
+class Skill:
+    def __init__(self, name, hours, goal, xp_value=None):
+        self.name = name
+        self.hours = hours
+        self.goal = goal
+        if xp_value is None:
+            self.xp_value = goal * 10
+        else:
+            self.xp_value = xp_value
 
-def getSkill(name): # Returns a single row from the skills table (hours, goal, xp)
+    def is_complete(self): # Checks if the skill's goal is reached
+        return self.hours >= self.goal
+
+    def progress_percentage(self): # Retruns the the user's progress as a percentage
+        if self.goal <= 0:
+            print("Error calculating progress, skill goal is 0 or less")
+            return -1
+        return round((self.hours / self.goal) * 100, 1)
+
+    def print_info(self): # Prints the skill's info
+        print(f"{self.name}: ")
+        print(f"   Hours Logged: {self.hours} hrs")
+        print(f"   Goal: {self.goal} hrs")
+        print(f"   Progress: {self.progress_percentage()}%")
+        print(f"   XP Value: {self.xp_value} XP")
+
+    def update_goal(self, new_goal): # Updates the goal of the skill and adjusts XP accordingly
+        self.xp_value = (new_goal - self.goal) * 10
+        self.goal = new_goal
+        self.save()
+
+    def add_progress(self, add_hours, user): # Adds hours towards competing a skill
+            self.hours += add_hours
+            self.save()
+            check_streak(user)
+            with sqlite3.connect("skills.db") as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                INSERT OR IGNORE INTO activity_log (date)
+                VALUES (?)
+                """, (date.today().isoformat(),))
+            user.hours_logged += add_hours
+            user.save()
+            check_dedication_goals(user)
+
+    def save(self): # Sends any changes made to the skill to the database
+        with sqlite3.connect("skills.db") as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+            UPDATE skills
+            SET
+                hours = ?,
+                goal = ?, 
+                xp_value = ?
+            WHERE name = ?
+            """, (
+                self.hours,
+                self.goal, 
+                self.xp_value, 
+                self.name
+            ))
+
+def get_skill(name): # Returns a Skill object from the skills table (hours, goal, xp)
+    if not skill_existence(name):
+        print(f"Error retrieving skill info; cannot find skill with name {name}.")
+        return None
     with sqlite3.connect("skills.db") as conn:
         cursor = conn.cursor()
         cursor.execute("""
@@ -20,19 +78,21 @@ def getSkill(name): # Returns a single row from the skills table (hours, goal, x
             FROM skills
             WHERE name = ?
             """, (name,))
-        return cursor.fetchone()
+        row = cursor.fetchone()
+        return Skill(name, row[0], row[1], row[2])
     
-def addSkill(name, goal): # Adds a new skill to the skills table
+def add_skill(name, goal, past_hrs): # Adds a new skill to the skills table, returns a Skill object of the new skill
     with sqlite3.connect("skills.db") as conn:
         cursor = conn.cursor()
         cursor.execute("""
             INSERT INTO skills
             (name, goal, hours, xp_value)
             VALUES (?, ?, ?, ?)
-            """, (name, goal, 0, goal * 10))
-        checkMultitaskGoals()
+            """, (name, goal, past_hrs, goal * 10))
+    check_multitask_goals()
+    return get_skill(name)
         
-def deleteSkill(del_choice): # Deletes a skill from the skills table
+def delete_skill(del_choice): # Deletes a skill from the skills table
     with sqlite3.connect("skills.db") as conn:
         cursor = conn.cursor()
         cursor.execute("""
@@ -40,103 +100,30 @@ def deleteSkill(del_choice): # Deletes a skill from the skills table
         WHERE name = ?
         """, (del_choice,))
 
-def progressSkill(user, name, add_hours): # Adds hours towards competing a skill
+def skill_existence(skill_name): # Returns True if skillName exists and False otherwise
     with sqlite3.connect("skills.db") as conn:
         cursor = conn.cursor()
-        cursor.execute("""
-        UPDATE skills
-        SET hours = hours + ?
-        WHERE name = ?
-        """, (add_hours, name))
-    checkStreak(user)
-    with sqlite3.connect("skills.db") as conn:
-        cursor = conn.cursor()
-        cursor.execute("""
-        INSERT OR IGNORE INTO activity_log (date)
-        VALUES (?)
-        """, (date.today().isoformat(),))
-    user.hours_logged += add_hours
-    user.save()
-    checkDedicationGoals(user)
-
-def skillExistence(skillName): # Returns True if skillName exists and False otherwise
-    with sqlite3.connect("skills.db") as conn:
-        cursor = conn.cursor()
-        cursor.execute("""SELECT EXISTS(SELECT 1 FROM skills WHERE name = ?)""", (skillName,))
+        cursor.execute("""SELECT EXISTS(SELECT 1 FROM skills WHERE name = ?)""", (skill_name,))
         existence = cursor.fetchone()[0]
     return existence == 1
 
-def checkEmptyList(): # Returns 0 if there are no skills and >0 otherwise
+def check_empty_list(): # Returns 0 if there are no skills and >0 otherwise
     with sqlite3.connect("skills.db") as conn:
         cursor = conn.cursor()
         cursor.execute("""SELECT COUNT(*) FROM skills""")
         empty = cursor.fetchone()[0]
     return empty
 
-def skillPrint(): # Prints data from the skills table in a readable format
-    skills = getSkills()
-    for name, goal, hours, xp_value in skills:
-        print(f"\n{name.title()}: ")
-        print(f"   Hours Logged: {hours} hrs")
-        print(f"   Goal: {goal} hrs")
-        if goal != 0:
-            print(f"   Progress: {(hours / goal) * 100 :.1f}%")
-        else:
-            print("   Error calculating progress percentage, goal is 0")
-        print(f"   XP Value: {xp_value}")
+def get_skills_array(): # Returns an array of Skill objects representing all of the user's skills
+    with sqlite3.connect("skills.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+        SELECT name, hours, goal, xp_value
+        FROM skills
+        """)
+        rows = cursor.fetchall()
+    return [Skill(name, hours, goal, xp_value) for name, hours, goal, xp_value in rows]
 
-def progressCheck(user, skill_name): # Checks if a user has completed a skill and handles next steps
-    row = getSkill(skill_name)
-    if row is None:
-        print("Error: Skill not found")
-        return
-    if row[0] >= row[1]:
-        completeAchievement(1004)
-        print(f"Congratulations! You've reached your goal for {skill_name}!")
-        user.addXp(row[2])
-        user.save()
-        while True:
-            prog_choice = intInput("Would you like to (1) update your goal or (2) remove the skill from your to-do list? ", False)
-
-            if prog_choice == 1: 
-                old_goal = row[1]
-                while True:
-                    updated_hours = intInput("New goal: ", False)
-                    if updated_hours > old_goal:
-                        break
-                    else:
-                        print("Your new goal should be greater than your old goal, please try again")
-                with sqlite3.connect("skills.db") as conn:
-                    cursor = conn.cursor()
-                    cursor.execute("""
-                        UPDATE skills
-                        SET goal = ? 
-                        WHERE name = ?
-                        """, (updated_hours, skill_name))
-                    cursor.execute("""
-                        UPDATE skills 
-                        SET xp_value = ? 
-                        WHERE name = ?""", ((updated_hours - old_goal) * 10, skill_name))
-                row = getSkill(skill_name)
-                break
-
-            elif prog_choice == 2:
-                deleteSkill(skill_name)
-                user.skills_mastered += 1
-                user.save()
-                print("Skill mastered!")
-                checkMasteryGoals(user)
-                break
-
-            else:
-                print("Invalid choice, please try again")
-    else:
-        if row[1] == 0:
-            print("Error calculating progress, skill goal is 0")
-        else:
-            if row[0] / row[1] >= 0.5:
-                completeAchievement(1002)
-            print("Your current progress in " + skill_name + ": ")
-            print(f"   Hours Logged: {row[0]} hrs")
-            print(f"   Goal: {row[1]} hrs")
-            print(f"   Progress: {(row[0] / row[1]) * 100 :.1f}%")
+def print_all_skills(): # Prints data from the skills table using getSkillsArray
+    for skill in get_skills_array():
+        skill.print_info()
