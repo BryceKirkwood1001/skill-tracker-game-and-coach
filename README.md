@@ -1,132 +1,81 @@
-# Skill Progress Tracker
+# Skill Tracker
 
-A Python-based skill and goal tracking application that turns personal development into a progression system.
+A command-line application for tracking progress toward real-world skills and goals through a game-inspired progression system.
 
-Skill Progress Tracker allows users to create skills they want to improve, set hour-based goals, log their progress, earn XP, level up, maintain activity streaks, and unlock achievements. The project is inspired by progression and achievement systems found in games, applied to real-world learning and self-improvement.
+Skill Tracker allows users to create hour-based skill goals, log their progress, earn XP, level up, maintain activity streaks, master skills, and unlock achievements. The project combines a traditional goal tracker with progression mechanics inspired by video games.
 
-The project is currently a command-line application backed by SQLite, with plans to expand it into a full web application with a graphical interface, authentication, additional gamification, and AI-powered progress analysis.
+**Status: v1.0 — Complete**
+
+This repository represents the completed first version of Skill Tracker. The application was developed as a personal learning project and evolved substantially over its development, from a simple Python script using JSON files into a modular, object-oriented application backed by a relational database.
 
 ## Features
 
 ### Skill Tracking
 
-Users can:
+Users can create skills they want to improve and assign each one an hour-based goal. The application supports:
 
-- Create skills and set hour-based goals
-- Log additional hours toward a skill
-- View all active skills and their progress
-- Update a goal after completing it
-- Mark completed skills as mastered
-- Delete skills they no longer want to track
-- View progress percentages and XP rewards
+- Creating and deleting skills
+- Logging hours toward active skills
+- Viewing current hours, goals, and progress percentages
+- Completing and mastering skills
+- Extending completed goals
+- Earning XP for reaching goals
 
-Skills are represented using an object-oriented `Skill` model that manages skill state and behavior.
+### User Progression
 
-### User Profiles
-
-Each user profile tracks:
+Skill Tracker maintains a persistent user profile containing:
 
 - Username
 - Total XP
 - Current level
-- XP required for the next level
+- XP milestone for the next level
 - Total hours logged
 - Number of skills mastered
 - Current activity streak
 
-User information is represented using a `User` model and persisted between sessions using SQLite.
-
-### XP & Leveling
-
-Completing skill goals rewards XP.
-
-As users accumulate XP, they level up and work toward progressively larger XP milestones. Skill XP rewards are based on the size of the goal, allowing larger goals to provide larger rewards.
+XP earned from completing goals contributes toward an increasing level progression system.
 
 ### Achievements
 
-The application includes an achievement system that rewards milestones across several categories.
+Achievements reward milestones across several categories, including:
 
-Current achievements include milestones for:
-
-- Creating a first goal
-- Reaching 50% progress on a goal
-- Completing a first goal
-- Maintaining multiple active goals
+- Creating and progressing through goals
+- Maintaining multiple active skills
 - Logging total hours
 - Mastering skills
-- Maintaining activity streaks
+- Maintaining consecutive-day activity streaks
 
-Achievement progress is stored in the database so unlocked achievements persist between sessions.
+Unlocked achievements are saved between sessions.
 
 ### Activity Streaks
 
-The application records days on which the user logs progress.
+Skill Tracker records days on which progress is logged and uses this history to maintain an activity streak.
 
-This allows it to:
+The system recognizes consecutive active days, prevents multiple logs on the same day from artificially increasing a streak, resets broken streaks, and awards achievements for longer streaks.
 
-- Track consecutive active days
-- Reset a streak after missed days
-- Prevent multiple sessions on the same day from increasing the streak multiple times
-- Unlock achievements for longer streaks
+### Persistent Storage
 
-## Technologies
+All application data is stored locally using SQLite.
 
-- **Python** — application logic
-- **SQLite** — persistent storage
-- **Object-Oriented Programming** — `User` and `Skill` models
-- **SQL** — user, skill, achievement, and activity data management
-- **Git / GitHub** — version control and project development
+The database maintains:
 
-The project uses Python's built-in `sqlite3` library and currently does not require external dependencies.
+- Active skills and their progress
+- User profile and progression data
+- Achievement status
+- Activity history
 
-## Database
+This allows progress to persist between application sessions without requiring an external service or account.
 
-Application data is stored in `skills.db`.
+## Technologies & Concepts
 
-The database contains four primary tables:
+- **Python**
+- **SQLite**
+- **SQL**
+- **Object-Oriented Programming**
+- **Relational database design**
+- **Git & GitHub**
 
-- `skills` — active skills, goals, hours, and XP rewards
-- `user_info` — profile information, XP, levels, total hours, mastery count, and streak
-- `achievements` — achievement information and unlock status
-- `activity_log` — dates on which progress was logged
-
-The database itself is not included in the repository so that each installation can maintain its own user data.
-
-`database_setup.py` initializes the required tables and default application data.
-
-## Running the Project
-
-### Requirements
-
-- Python 3
-- No third-party packages are currently required
-
-### Setup
-
-Clone the repository:
-
-```bash
-git clone <repository-url>
-cd <repository-folder>
-```
-
-Initialize the database:
-
-```bash
-python database_setup.py
-```
-
-This creates the local SQLite database and populates the default application data.
-
-Then start the application:
-
-```bash
-python main_skill_tracker.py
-```
-
-On the first run, the application will prompt you to create a username.
-
-After setup, the database will persist your skills, profile statistics, achievements, and activity history between sessions.
+The project uses Python's built-in `sqlite3` module and does not currently require third-party packages.
 
 ## Project Structure
 
@@ -136,56 +85,98 @@ After setup, the database will persist your skills, profile statistics, achievem
 ├── skills.py               # Skill model and skill management
 ├── user.py                 # User model and profile management
 ├── achievements.py         # Achievement and streak logic
-├── util.py                 # Input validation and utility functions
-├── database_setup.py       # SQLite database initialization
+├── util.py                 # Input validation and utilities
+├── database_setup.py       # Creates and initializes the database
 ├── .gitignore
 └── README.md
 ```
 
-## Planned Features
+`User` and `Skill` are represented as Python objects while SQLite provides persistent storage for their data.
 
-The current command-line application serves as the foundation for a larger skill-development platform.
+## Running Skill Tracker
 
-Planned additions include:
+### Requirements
 
-- **Web interface** — Replace the command-line interface with a browser-based dashboard
-- **Flask backend** — Connect the existing Python application logic to a web application
-- **Authentication** — Support secure accounts and multiple users
-- **Improved database architecture** — Adapt the database for multiple users and additional application data
-- **Achievement dashboard** — Visually display unlocked and locked achievements
-- **Expanded gamification** — Additional rewards, collectibles, progression systems, and statistics
-- **Progress visualization** — Charts and dashboards showing skill development over time
-- **AI goal analysis** — Analyze goals and progress patterns to provide personalized feedback, milestone suggestions, and recommendations
-- **Improved UI/UX** — Create a polished interface for managing skills and viewing progression
+- Python 3
 
-## What I Built & Learned
+No third-party Python packages are required.
 
-This project was built from scratch as a personal learning project.
+### 1. Clone the repository
 
-It originally began as a small Python command-line program that stored skills in JSON files. As the application grew, I progressively redesigned it to introduce technologies and software development concepts I wanted to learn.
+```bash
+git clone <repository-url>
+cd <repository-folder>
+```
 
-So far, I have:
+### 2. Initialize the database
 
-- Designed the application's skill tracking and gamification systems
-- Built CRUD functionality for creating, reading, updating, and deleting skills
-- Migrated application storage from JSON files to a relational SQLite database
-- Designed database tables for skills, users, achievements, and activity history
-- Written parameterized SQL queries for database operations
+Run:
+
+```bash
+python database_setup.py
+```
+
+This creates `skills.db`, initializes the necessary database tables, and adds the application's default achievements.
+
+### 3. Start the application
+
+Run:
+
+```bash
+python main_skill_tracker.py
+```
+
+On the first run, Skill Tracker will prompt you to choose a username. Your subsequent progress will be saved locally in `skills.db`.
+
+## Development
+
+Skill Tracker began as a much smaller Python program that stored skill and user information in JSON files. Rather than starting with the application's current architecture, I expanded and refactored it as I encountered new problems and learned new concepts.
+
+Over the course of the project, I:
+
+- Designed the skill tracking and gamification systems
+- Implemented CRUD operations for skill management
 - Built an XP and leveling system
-- Designed and implemented a persistent achievement system
-- Built activity logging and consecutive-day streak tracking
-- Added input validation and edge-case handling
-- Refactored the application into multiple Python modules
+- Designed an achievement system with multiple categories of milestones
+- Implemented activity logging and consecutive-day streak tracking
+- Added input validation and handling for application edge cases
+- Migrated persistent storage from JSON files to SQLite
+- Designed relational database tables for users, skills, achievements, and activity history
+- Wrote parameterized SQL queries for database operations
+- Debugged database transaction and locking issues
+- Refactored the original program into multiple Python modules
 - Refactored dictionary- and function-based code into object-oriented `User` and `Skill` models
-- Worked through database transaction, locking, state synchronization, and persistence issues
-- Used Git and GitHub to version and document the project
+- Managed synchronization between in-memory objects and persistent database state
+- Used Git and GitHub throughout development for version control
 
-Rather than beginning with a finished architecture, I have intentionally expanded and refactored the application as I learn new concepts. This has allowed the project to evolve from a basic Python script into a more structured application while giving me hands-on experience with database design, object-oriented programming, application architecture, debugging, and persistent state management.
+One of the main goals of the project was to learn new concepts by introducing them when the growing application created a practical reason to use them. As a result, the architecture evolved alongside my understanding of Python application development.
 
-## Current Status
+## Scope of v1.0
 
-**In Development**
+The original concept for Skill Tracker included ideas for a much larger application, including a graphical web interface, user authentication, deeper statistics and visualization, additional gamification systems, and AI-assisted goal analysis.
 
-The core command-line application is functional, including skill tracking, user progression, achievements, streaks, and SQLite persistence.
+Those features are not required for the completed v1.0 release.
 
-The next major development phase is transitioning the project from a command-line program into a web application.
+Instead, v1.0 focuses on providing a complete local command-line experience: users can create goals, track their progress over time, build streaks, earn achievements and XP, level up, master skills, and retain their progress between sessions.
+
+The project may be expanded in the future, but this release represents the completed scope of the original learning project.
+
+## Potential Future Development
+
+If development resumes in the future, possible extensions include:
+
+- Browser-based user interface
+- Flask backend
+- Multi-user support and authentication
+- Progress charts and historical statistics
+- Achievement and profile dashboards
+- Additional progression and collectible systems
+- AI-assisted goal analysis and progress recommendations
+
+These ideas are possible extensions rather than requirements for the current release.
+
+## Version
+
+**Skill Tracker v1.0**
+
+A complete local CLI skill-tracking and gamification application built with Python and SQLite.
