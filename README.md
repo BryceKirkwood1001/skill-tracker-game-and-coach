@@ -1,182 +1,289 @@
 # Skill Tracker
 
-A command-line application for tracking progress toward real-world skills and goals through a game-inspired progression system.
+**A Python-based skill tracking application that gamifies personal growth through XP, levels, achievements, and activity streaks.**
 
-Skill Tracker allows users to create hour-based skill goals, log their progress, earn XP, level up, maintain activity streaks, master skills, and unlock achievements. The project combines a traditional goal tracker with progression mechanics inspired by video games.
+Skill Tracker is a command-line application that allows users to create personal development goals, log hours toward those goals, and earn rewards as they make progress.
 
-**Status: v1.0 — Complete**
+Inspired by progression systems in video games, Skill Tracker aims to make learning and self-improvement more engaging by turning real-world accomplishments into measurable progress.
 
-This repository represents the completed first version of Skill Tracker. The application was developed as a personal learning project and evolved substantially over its development, from a simple Python script using JSON files into a modular, object-oriented application backed by a relational database.
+The application supports multiple user accounts, secure password hashing, and persistent storage through SQLite. Each user maintains their own skills, progression statistics, achievements, and activity history.
+
+**Project Status:** Active Development — Functional CLI Application
 
 ## Features
 
 ### Skill Tracking
 
-Users can create skills they want to improve and assign each one an hour-based goal. The application supports:
+Users can create and manage skills they want to improve, with each skill having an hour-based goal.
 
-- Creating and deleting skills
-- Logging hours toward active skills
-- Viewing current hours, goals, and progress percentages
-- Completing and mastering skills
-- Extending completed goals
-- Earning XP for reaching goals
+Current functionality includes:
 
-### User Progression
+- Create skills with customizable goals and existing hours
+- Log additional hours toward a skill
+- View active skills, progress percentages, and XP rewards
+- Complete goals and earn XP
+- Extend completed goals
+- Master and remove completed skills
+- Delete skills that are no longer being pursued
 
-Skill Tracker maintains a persistent user profile containing:
+Skills are managed using an object-oriented `Skill` class, which handles skill data, progress calculations, goal updates, and database persistence.
 
-- Username
-- Total XP
-- Current level
-- XP milestone for the next level
-- Total hours logged
-- Number of skills mastered
-- Current activity streak
+### User Accounts & Authentication
 
-XP earned from completing goals contributes toward an increasing level progression system.
+Skill Tracker supports multiple accounts, allowing different users to maintain independent progression histories.
+
+Users can:
+
+- Register an account with a unique username and password
+- Log into an existing account
+- Log out and switch accounts
+- Access their saved profile and skill data across sessions
+
+Passwords are hashed using Werkzeug's password hashing utilities rather than being stored in plaintext.
+
+Each account is assigned a unique user ID. Skills, activity records, and unlocked achievements are associated with that ID to keep user data separate.
+
+### XP & Leveling
+
+Completing skill goals rewards XP, which contributes to the user's overall level.
+
+The application includes:
+
+- XP rewards based on goal size
+- Level progression
+- Increasing XP milestones as levels rise
+- Persistent XP and level information
+
+Users can view their progression through their profile.
 
 ### Achievements
 
-Achievements reward milestones across several categories, including:
+Skill Tracker features an achievement system that rewards users for reaching milestones in several categories.
 
-- Creating and progressing through goals
-- Maintaining multiple active skills
-- Logging total hours
-- Mastering skills
-- Maintaining consecutive-day activity streaks
+| Category | Examples |
+|---|---|
+| Introductory | Create a first goal, reach 50% progress, complete a goal |
+| Multitasking | Maintain 3, 5, 10, or 20 active goals |
+| Dedication | Accumulate 10, 50, 100, or more logged hours |
+| Mastery | Master 1, 3, 5, or more skills |
+| Motivation | Maintain consecutive-day activity streaks |
 
-Unlocked achievements are saved between sessions.
+Achievement definitions are shared across the application, while unlock records are maintained separately for each user.
+
+Previously unlocked achievements persist between sessions and cannot be awarded multiple times to the same user.
 
 ### Activity Streaks
 
-Skill Tracker records days on which progress is logged and uses this history to maintain an activity streak.
+Skill Tracker records the dates on which users log progress and tracks consecutive days of activity.
 
-The system recognizes consecutive active days, prevents multiple logs on the same day from artificially increasing a streak, resets broken streaks, and awards achievements for longer streaks.
+The system:
 
-### Persistent Storage
+- Tracks each user's activity history independently
+- Increases streaks for consecutive active days
+- Avoids counting multiple activity logs on the same day as multiple streak days
+- Resets streaks following missed days
+- Awards achievements for streak milestones
 
-All application data is stored locally using SQLite.
+### User Profiles
 
-The database maintains:
+Each account maintains the following statistics:
 
-- Active skills and their progress
-- User profile and progression data
-- Achievement status
-- Activity history
+- Username
+- Current XP
+- Current level
+- Next XP milestone
+- Total hours logged
+- Skills mastered
+- Current activity streak
 
-This allows progress to persist between application sessions without requiring an external service or account.
+All statistics persist between sessions.
 
-## Technologies & Concepts
+## Technologies
 
-- **Python**
-- **SQLite**
-- **SQL**
-- **Object-Oriented Programming**
-- **Relational database design**
-- **Git & GitHub**
+| Technology | Purpose |
+|---|---|
+| Python | Core application logic and CLI |
+| SQLite | Persistent relational database |
+| SQL | Data retrieval, updates, and relationships |
+| Werkzeug | Secure password hashing and verification |
+| Object-Oriented Programming | User and Skill models |
+| Git & GitHub | Version control and project management |
 
-The project uses Python's built-in `sqlite3` module and does not currently require third-party packages.
+## Database Architecture
 
-## Project Structure
+Skill Tracker uses a local SQLite database, `skill_tracker.db`, containing five tables.
+
+| Table | Purpose |
+|---|---|
+| `user_info` | User accounts, password hashes, and progression statistics |
+| `skills` | User-owned skills, goals, hours, and XP rewards |
+| `achievements` | Shared achievement definitions |
+| `user_achievements` | Achievements unlocked by individual users |
+| `activity_log` | User-specific activity dates for streak tracking |
+
+### Multi-User Data Management
+
+The application uses unique user IDs and relational database foreign keys to associate records with the accounts that own them.
+
+For example:
 
 ```text
-.
-├── main_skill_tracker.py   # Main CLI and application flow
-├── skills.py               # Skill model and skill management
-├── user.py                 # User model and profile management
-├── achievements.py         # Achievement and streak logic
-├── util.py                 # Input validation and utilities
-├── database_setup.py       # Creates and initializes the database
-├── .gitignore
-└── README.md
+user_info
+   |
+   +---- skills
+   |
+   +---- activity_log
+   |
+   +---- user_achievements
+              |
+              +---- achievements
 ```
 
-`User` and `Skill` are represented as Python objects while SQLite provides persistent storage for their data.
+The `user_achievements` table establishes a many-to-many relationship between users and achievements. This allows multiple users to unlock the same achievement independently without duplicating the achievement definitions.
 
-## Running Skill Tracker
+Skill queries are filtered by user ID to ensure that users only retrieve or modify their own skill records.
+
+Database constraints also prevent duplicate activity entries for the same user on the same date.
+
+## Installation & Usage
 
 ### Requirements
 
 - Python 3
+- Werkzeug
 
-No third-party Python packages are required.
-
-### 1. Clone the repository
+### 1. Clone the Repository
 
 ```bash
 git clone <repository-url>
 cd <repository-folder>
 ```
 
-### 2. Initialize the database
+Replace the placeholders with the URL and directory name of this repository.
 
-Run:
+### 2. Install Dependencies
+
+Install Werkzeug:
+
+```bash
+python -m pip install werkzeug
+```
+
+### 3. Initialize the Database
 
 ```bash
 python database_setup.py
 ```
 
-This creates `skills.db`, initializes the necessary database tables, and adds the application's default achievements.
+This creates the local SQLite database, initializes the required tables, and populates the default achievement definitions.
 
-### 3. Start the application
-
-Run:
+### 4. Start the Application
 
 ```bash
 python main_skill_tracker.py
 ```
 
-On the first run, Skill Tracker will prompt you to choose a username. Your subsequent progress will be saved locally in `skills.db`.
+On startup, the application presents an account menu:
 
-## Development
+```text
+1. Log In
+2. Create Account
+3. Exit App
+```
 
-Skill Tracker began as a much smaller Python program that stored skill and user information in JSON files. Rather than starting with the application's current architecture, I expanded and refactored it as I encountered new problems and learned new concepts.
+Create an account or log into an existing one to access the main application.
 
-Over the course of the project, I:
+Once authenticated, users can create and manage skills, log progress, view their profiles, and earn achievements.
 
-- Designed the skill tracking and gamification systems
-- Implemented CRUD operations for skill management
-- Built an XP and leveling system
-- Designed an achievement system with multiple categories of milestones
-- Implemented activity logging and consecutive-day streak tracking
-- Added input validation and handling for application edge cases
+Logging out returns the user to the account menu without closing the application.
+
+## Project Structure
+
+```text
+Skill-Tracker/
+│
+├── main_skill_tracker.py  # Account menu and main CLI
+├── user.py                # User model and authentication
+├── skills.py              # Skill model and management
+├── achievements.py        # Achievement and streak systems
+├── database_setup.py      # Database schema and initialization
+├── util.py                # Input validation helpers
+├── .gitignore             # Ignored local files
+└── README.md              # Project documentation
+```
+
+The `skill_tracker.db` database is created locally during setup and should not be committed to the repository.
+
+## Development & What I Built
+
+Skill Tracker began as a small Python command-line program storing user and skill information in JSON files.
+
+As I continued developing it, I expanded the application's functionality and redesigned its architecture to incorporate new programming concepts and technologies.
+
+Throughout the project, I have:
+
+- Designed and implemented a skill and goal tracking system
+- Developed XP, leveling, skill mastery, and achievement mechanics
+- Built activity logging and streak tracking functionality
 - Migrated persistent storage from JSON files to SQLite
-- Designed relational database tables for users, skills, achievements, and activity history
-- Wrote parameterized SQL queries for database operations
-- Debugged database transaction and locking issues
-- Refactored the original program into multiple Python modules
-- Refactored dictionary- and function-based code into object-oriented `User` and `Skill` models
-- Managed synchronization between in-memory objects and persistent database state
-- Used Git and GitHub throughout development for version control
+- Designed relational database tables and relationships
+- Implemented CRUD operations using parameterized SQL queries
+- Refactored the application into multiple Python modules
+- Introduced object-oriented `User` and `Skill` models
+- Implemented registration, login, and logout functionality
+- Added password hashing and verification using Werkzeug
+- Expanded the database architecture to support multiple users
+- Implemented foreign keys, uniqueness constraints, and user-specific database queries
+- Redesigned achievement storage using a many-to-many relationship
+- Debugged issues involving database transactions, object state, and persistent storage
+- Used Git and GitHub to track changes and document development
 
-One of the main goals of the project was to learn new concepts by introducing them when the growing application created a practical reason to use them. As a result, the architecture evolved alongside my understanding of Python application development.
+One of the main goals of this project has been to learn new technologies and software engineering concepts through practical implementation.
 
-## Scope of v1.0
+Rather than beginning with a predetermined architecture, I have continually expanded and refactored the program as its requirements evolved.
 
-The original concept for Skill Tracker included ideas for a much larger application, including a graphical web interface, user authentication, deeper statistics and visualization, additional gamification systems, and AI-assisted goal analysis.
+The transition from a single-user, JSON-based CLI into a multi-user, SQLite-backed application has provided experience with database design, authentication, object-oriented programming, modular architecture, and managing persistent application state.
 
-Those features are not required for the completed v1.0 release.
+## Future Development
 
-Instead, v1.0 focuses on providing a complete local command-line experience: users can create goals, track their progress over time, build streaks, earn achievements and XP, level up, master skills, and retain their progress between sessions.
+The current version focuses on providing a functional command-line experience with persistent, account-specific progress tracking.
 
-The project may be expanded in the future, but this release represents the completed scope of the original learning project.
+Potential upcoming additions include:
 
-## Potential Future Development
+### Web Interface
 
-If development resumes in the future, possible extensions include:
+- Transition from the terminal to a browser-based application
+- Build a Python web backend using Flask
+- Create a dashboard for skills, progression, and achievements
+- Implement interactive forms for goal creation and progress logging
+- Improve the visual presentation of gamification mechanics
 
-- Browser-based user interface
-- Flask backend
-- Multi-user support and authentication
-- Progress charts and historical statistics
-- Achievement and profile dashboards
-- Additional progression and collectible systems
-- AI-assisted goal analysis and progress recommendations
+### AI Skill Coach
 
-These ideas are possible extensions rather than requirements for the current release.
+- Integrate a large language model API
+- Analyze users' existing goals and progress
+- Generate personalized recommendations
+- Suggest realistic milestones and improvements
+- Provide feedback based on skill development patterns
 
-## Version
+### Additional Improvements
 
-**Skill Tracker v1.0**
+- Historical progress visualizations
+- More detailed achievement displays
+- Additional profile customization
+- Expanded gamification systems
+- Improvements to account security and user experience
 
-A complete local CLI skill-tracking and gamification application built with Python and SQLite.
+These are planned directions rather than features of the current release.
+
+## Project Status
+
+**Core CLI: Functional**
+
+**Multi-User Support: Implemented**
+
+**Web Interface: Planned**
+
+**AI Coach: Planned**
+
+Skill Tracker remains an ongoing learning project. Its current version provides a functional foundation for tracking skill development across multiple user accounts, with the possibility of additional features as development continues.
